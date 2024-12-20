@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;  // Adicionar o namespace para o atributo Authorize
 using Microsoft.AspNetCore.Mvc; // Para ApiController, ControllerBase, IActionResult
-using System.Threading.Tasks;
 using System.Security.Claims; // Add this line to import ClaimTypes
 using YourNamespace.Dtos; // Ensure this is the correct namespace for ContactDto
-using Microsoft.Extensions.Logging; 
 
 
 [ApiController]

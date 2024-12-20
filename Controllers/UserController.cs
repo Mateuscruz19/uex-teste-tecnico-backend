@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc; // Para ApiController, ControllerBase, IActionResult
-using System.Threading.Tasks;
-using YourNamespace.Dtos; // Replace 'YourNamespace.Dtos' with the actual namespace where UserDto is defined
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using YourNamespace.Dtos;
 
- // Para métodos assíncronos
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
@@ -20,16 +20,14 @@ public class UserController : ControllerBase
         try
         {
             var user = await _userService.Register(userDto);
-            return Ok(user); // Retorna o usuário registrado com sucesso
+            return Ok(user);
         }
         catch (ArgumentException ex)
         {
-            // Retorna 400 se o email já estiver em uso
             return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
-            // Retorna 500 em caso de erro interno não esperado
             return StatusCode(500, new { message = "Ocorreu um erro ao processar a solicitação.", details = ex.Message });
         }
     }
@@ -40,16 +38,46 @@ public class UserController : ControllerBase
         try
         {
             var token = await _userService.Login(loginDto);
-            return Ok(new { Token = token }); // Retorna o token JWT gerado
+            return Ok(new { Token = token });
         }
         catch (UnauthorizedAccessException ex)
         {
-            // Retorna 401 se as credenciais forem inválidas
             return Unauthorized(new { message = ex.Message });
         }
         catch (Exception ex)
         {
-            // Retorna 500 em caso de erro interno não esperado
+            return StatusCode(500, new { message = "Ocorreu um erro ao processar a solicitação.", details = ex.Message });
+        }
+    }
+
+    // Rota protegida para deletar a conta e contatos do usuário
+    [HttpDelete("delete-account")]
+    [Authorize] // Esta rota exige que o usuário esteja autenticado
+    public async Task<IActionResult> DeleteAccount()
+    {
+        try
+        {
+            // Obtém o ID do usuário a partir do token JWT
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null)
+            {
+                return Unauthorized(new { message = "ID do usuário não encontrado no token." });
+            }
+
+            var userId = int.Parse(userIdClaim);
+
+            // Chama o UserService para excluir o usuário e seus contatos
+            var success = await _userService.DeleteUserAndContacts(userId);
+
+            if (!success)
+            {
+                return NotFound(new { message = "Usuário não encontrado." });
+            }
+
+            return Ok(new { message = "Conta e contatos excluídos com sucesso." });
+        }
+        catch (Exception ex)
+        {
             return StatusCode(500, new { message = "Ocorreu um erro ao processar a solicitação.", details = ex.Message });
         }
     }

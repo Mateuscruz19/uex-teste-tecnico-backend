@@ -13,8 +13,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddControllers();
 
 // Registrar os serviços necessários para injeção de dependências
-builder.Services.AddScoped<UserService>();  
-builder.Services.AddScoped<ContactService>(); 
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ContactService>();
 
 // Configuração de Autenticação JWT
 builder.Services.AddAuthentication(options =>
@@ -37,6 +37,17 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// Adicionar e configurar CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", builder =>
+    {
+        builder.WithOrigins("http://localhost:3000") // Endereço do seu frontend
+               .AllowAnyHeader()
+               .AllowAnyMethod();
+    });
+});
+
 // Adicionar Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -52,9 +63,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Habilitar CORS no pipeline antes da autenticação
+app.UseCors("AllowFrontend"); // Habilita CORS antes de autenticação
+
 // Adicionar autenticação ao pipeline
-app.UseAuthentication();  // Esse é o ponto crucial para o JWT funcionar
-app.UseAuthorization();   // Certifique-se de usar a autorização depois de autenticação
+app.UseAuthentication(); // Esse é o ponto crucial para o JWT funcionar
+app.UseAuthorization();  // Certifique-se de usar a autorização depois de autenticação
 
 // Mapeia os controladores
 app.MapControllers();
@@ -63,7 +77,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate();  // Cria o banco e aplica as migrações
+    dbContext.Database.Migrate(); // Cria o banco e aplica as migrações
 }
 
 app.Run();

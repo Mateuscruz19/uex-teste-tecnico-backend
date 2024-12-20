@@ -16,6 +16,12 @@ public class AppDbContext : DbContext
             .WithOne()                         // Um Address pertence a um Contact
             .HasForeignKey<Contact>(c => c.AddressId);  // Chave estrangeira AddressId
 
+        // Configurar relacionamento entre User e Contact
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Contacts)          // Um User pode ter muitos Contacts
+            .WithOne(c => c.User)              // Cada Contact tem um User
+            .HasForeignKey(c => c.UserId);     // Chave estrangeira UserId
+
         base.OnModelCreating(modelBuilder);
     }
 }

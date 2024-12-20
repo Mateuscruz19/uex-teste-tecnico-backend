@@ -1,7 +1,10 @@
 public class Contact
 {
     public int Id { get; set; }
-    public int UserId { get; set; }  // Relacionamento com o usuário
+    
+    public int UserId { get; set; }  // Chave estrangeira para User
+    public User User { get; set; }    // Propriedade de navegação para User
+    
     public string Name { get; set; }
     public string Cpf { get; set; }
     public string Phone { get; set; }
@@ -12,7 +15,7 @@ public class Contact
 
 public class Address
 {
-    public int Id { get; set; }  // Adicionando a chave primária
+    public int Id { get; set; }  // Chave primária
     public string Street { get; set; }
     public string Number { get; set; }
     public string Neighborhood { get; set; }
