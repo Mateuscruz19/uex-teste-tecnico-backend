@@ -1,16 +1,23 @@
+using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using YourNamespace.Dtos;
 using BCrypt.Net;
+using Microsoft.Extensions.Configuration;
 
 public class UserService
 {
     private readonly AppDbContext _dbContext;
+    private readonly IConfiguration _configuration;
 
-    public UserService(AppDbContext dbContext)
+    public UserService(AppDbContext dbContext, IConfiguration configuration)
     {
         _dbContext = dbContext;
+        _configuration = configuration;
     }
 
     public async Task<User> Register(UserDto userDto)
@@ -38,8 +45,26 @@ public class UserService
         if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
             throw new Exception("Credenciais inválidas.");
 
-        // Gerar um token JWT (implementação fictícia, você precisará ajustar isso)
-        return "token_fake_de_exemplo";
-    }
+        // Gerar o Token JWT
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var secretKey = _configuration["Jwt:SecretKey"] ?? throw new Exception("Secret key not found in configuration.");
+        var key = Encoding.ASCII.GetBytes(secretKey);
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new System.Security.Claims.ClaimsIdentity(new[]
+            {
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, user.FullName),
+                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Email, user.Email)
+            }),
+            Expires = DateTime.UtcNow.AddHours(1),  // Define o tempo de expiração do token
+            Issuer = _configuration["Jwt:Issuer"],
+            Audience = _configuration["Jwt:Audience"],
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
 
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
 }
+
