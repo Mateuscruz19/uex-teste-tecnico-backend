@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore; // Para DbContext e DbSet
 public class AppDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }

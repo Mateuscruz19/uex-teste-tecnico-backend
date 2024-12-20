@@ -1,3 +1,8 @@
+using Microsoft.AspNetCore.Mvc; // Para ApiController, ControllerBase, IActionResult
+using System.Threading.Tasks;
+using YourNamespace.Dtos; // Replace 'YourNamespace.Dtos' with the actual namespace where UserDto is defined
+
+ // Para métodos assíncronos
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
@@ -12,7 +17,7 @@ public class UserController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(UserDto userDto)
     {
-        var user = await _userService.Register(userDto);
+        var user = await _userService.Register(userDto); 
         return Ok(user);
     }
 

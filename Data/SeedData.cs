@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 public static class SeedData
 {
     public static void Initialize(IServiceProvider serviceProvider, IHostEnvironment env)

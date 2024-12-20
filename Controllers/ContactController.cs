@@ -1,3 +1,8 @@
+using Microsoft.AspNetCore.Mvc; // Para ApiController, ControllerBase, IActionResult
+using System.Threading.Tasks;
+using YourNamespace.Dtos; // Ensure this is the correct namespace for ContactDto
+
+// Para métodos assíncronos
 [ApiController]
 [Route("api/[controller]")]
 public class ContactController : ControllerBase
