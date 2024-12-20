@@ -13,15 +13,21 @@ public class ContactService
         _dbContext = dbContext;
     }
 
-    public async Task<List<Contact>> GetAllContacts()
+    // Método para buscar os contatos do usuário autenticado
+    public async Task<List<Contact>> GetAllContactsForUser(int userId)
     {
-        return await _dbContext.Contacts.Include(c => c.Address).ToListAsync();
+        return await _dbContext.Contacts
+            .Where(c => c.UserId == userId)  // Filtra os contatos apenas para o usuário logado
+            .Include(c => c.Address)
+            .ToListAsync();
     }
 
-    public async Task<Contact> AddContact(ContactDto contactDto)
+    // Método para adicionar um contato ao usuário autenticado
+    public async Task<Contact> AddContactForUser(ContactDto contactDto, int userId)
     {
         var contact = new Contact
         {
+            UserId = userId,  // Relaciona o contato ao usuário autenticado
             Name = contactDto.Name,
             Cpf = contactDto.Cpf,
             Phone = contactDto.Phone,
@@ -42,5 +48,4 @@ public class ContactService
 
         return contact;
     }
-
 }
